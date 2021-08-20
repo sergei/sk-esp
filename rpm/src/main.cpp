@@ -8,6 +8,10 @@
 #include "signalk/signalk_output.h"
 #include "transforms/linear.h"
 
+#include "camera.h"
+
+void initCamera();
+
 // SensESP builds upon the ReactESP framework. Every ReactESP application
 // defines an "app" object vs defining a "main()" method.
 ReactESP app([]() {
@@ -84,6 +88,14 @@ ReactESP app([]() {
   // for more details.
   analog_input->connect_to(new Linear(multiplier, offset, linear_config_path))
       ->connect_to(new SKOutputNumber(sk_path, "", new SKMetadata("ratio")));
+
+
+  app.onDelay(1000, []() {
+  // init camera 
+    Serial.printf("onDelayTriggered");
+    SkCamera camera;
+    camera.init();
+  });
 
   // Start the SensESP application running
   sensesp_app->enable();
