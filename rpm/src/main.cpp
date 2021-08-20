@@ -3,6 +3,8 @@
 #include <Arduino.h>
 
 #include "sensesp_app.h"
+#include "sensesp_app_builder.h"
+
 #include "signalk/signalk_output.h"
 #include "transforms/linear.h"
 
@@ -15,8 +17,24 @@ ReactESP app([]() {
   SetupSerialDebug(115200);
 #endif
 
+  uint32_t chipId = 0;
+  for(int i=0; i<17; i=i+8) {
+    chipId |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
+  }
+
+  char host_name[64];
+  sprintf(host_name,"sk-cam-%08X", chipId);
+
   // Create the global SensESPApp() object.
-  sensesp_app = new SensESPApp();
+  // sensesp_app = new SensESPApp();
+  
+  SensESPAppBuilder builder;
+
+  sensesp_app = builder.set_standard_sensors(ALL)
+              ->set_hostname(host_name)
+              ->set_wifi("ottophone", "ottopilot")
+              ->get_app(); 
+
 
   // The "Signal K path" identifies this sensor to the Signal K server. Leaving
   // this blank would indicate this particular sensor (or transform) does not
