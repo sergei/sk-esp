@@ -6,9 +6,9 @@
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
 #include "camera_pins.h"
 
-void startCameraServer();
+void startCameraServer(uint16_t  server_port);
 
-void SkCamera::init(){
+void SkCamera::init(uint16_t  server_port){
 camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -70,5 +70,5 @@ camera_config_t config;
   s->set_hmirror(s, 1);
 #endif
 
-    startCameraServer();
+    startCameraServer(server_port);
 }

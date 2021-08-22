@@ -608,9 +608,9 @@ static esp_err_t index_handler(httpd_req_t *req){
     return httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
 }
 
-void startCameraServer(){
+void startCameraServer(uint16_t    server_port){
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.server_port = 3333;
+    config.server_port = server_port;
 
     httpd_uri_t index_uri = {
         .uri       = "/",
@@ -676,10 +676,10 @@ void startCameraServer(){
         httpd_register_uri_handler(camera_httpd, &capture_uri);
     }
 
-    // config.server_port += 1;
-    // config.ctrl_port += 1;
-    // Serial.printf("Starting stream server on port: '%d'\n", config.server_port);
-    // if (httpd_start(&stream_httpd, &config) == ESP_OK) {
-    //     httpd_register_uri_handler(stream_httpd, &stream_uri);
-    // }
+    config.server_port += 1;
+    config.ctrl_port += 1;
+    Serial.printf("Starting stream server on port: '%d'\n", config.server_port);
+    if (httpd_start(&stream_httpd, &config) == ESP_OK) {
+        httpd_register_uri_handler(stream_httpd, &stream_uri);
+    }
 }

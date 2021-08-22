@@ -3,5 +3,5 @@ class SkCamera
 private:
     /* data */
 public:
-    void init();
+    void init(uint16_t  server_port);
 };
