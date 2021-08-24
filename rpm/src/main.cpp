@@ -6,8 +6,11 @@
 
 #include "camera.h"
 
-// #define SSID "ottophone"
-// #define WIFI_PASSWD "ottopilot"
+#define SSID "ottophone"
+#define WIFI_PASSWD "ottopilot"
+
+// #define SK_ADDR "192.168.4.1"
+// #define SK_PORT 80
 
 void initCamera();
 SKPutRequest<StaticJsonDocument<1024>> *request;
@@ -30,12 +33,17 @@ ReactESP app([]() {
   char host_name[64];
   sprintf(host_name,"sk-cam-%08X", chipId);
 
+  SystemStatusLed *pSystemLed = new SystemStatusLed(33);
   SensESPAppBuilder builder;
 
-  sensesp_app = builder.set_standard_sensors(WIFI_SIGNAL)
+  sensesp_app = builder.set_standard_sensors(NONE)
               ->set_hostname(host_name)
+              ->set_system_status_led(pSystemLed)
 #ifdef SSID              
               ->set_wifi(SSID, WIFI_PASSWD)
+#endif
+#ifdef SK_ADDR              
+              ->set_sk_server(SK_ADDR, SK_PORT)
 #endif
               ->get_app(); 
 
@@ -52,6 +60,8 @@ ReactESP app([]() {
       DynamicJsonDocument doc(1024);
       doc["ip"] = WiFi.localIP().toString();
       doc["id"] = chipId;
+      doc["rssi"] = WiFi.RSSI();
+      doc["uptime"] = millis() / 1000;
       doc["camera_port"] = camera_server_port;
       doc["stream_port"] = camera_server_port + 1;
       request->set_input(doc);
