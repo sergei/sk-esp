@@ -6,11 +6,11 @@
 
 #include "camera.h"
 
-#define SSID "ottophone"
+#define SSID "OTTOPI"
 #define WIFI_PASSWD "ottopilot"
 
-// #define SK_ADDR "192.168.4.1"
-// #define SK_PORT 80
+#define SK_ADDR "192.168.4.1"
+#define SK_PORT 80
 
 void initCamera();
 uint32_t chipId = 0;
