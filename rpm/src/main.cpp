@@ -18,6 +18,7 @@ uint16_t  camera_server_port;
 
 SKPutRequest<StaticJsonDocument<1024>> request("camera.info");
 StaticJsonDocument<1024> doc;
+SkCamera camera;
 
 // SensESP builds upon the ReactESP framework. Every ReactESP application
 // defines an "app" object vs defining a "main()" method.
@@ -51,7 +52,6 @@ ReactESP app([]() {
 
   app.onDelay(1000, []() {
   // init camera 
-    SkCamera camera;
     camera_server_port = 3333;
     camera.init(camera_server_port);
   });
@@ -68,6 +68,9 @@ ReactESP app([]() {
     }
   });
 
+  app.onRepeat(1000, []() {
+        camera.addToRingBuffer();
+  });
 
   // Start the SensESP application running
   sensesp_app->enable();

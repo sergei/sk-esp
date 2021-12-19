@@ -1,4 +1,6 @@
 #include "esp_camera.h"
+#include "img_converters.h"
+
 #include <WiFi.h>
 
 #include "camera.h"
@@ -63,12 +65,69 @@ camera_config_t config;
     s->set_saturation(s, -2); // lower the saturation
   }
   // drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_QVGA);
+  s->set_framesize(s, FRAMESIZE_UXGA);
 
 #if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
   s->set_vflip(s, 1);
   s->set_hmirror(s, 1);
 #endif
 
+    InitSdCard();
+    m_bIsReady = true;
     startCameraServer(server_port);
+}
+
+void SkCamera::addToRingBuffer() {
+    if(! m_bIsSdCardMounted || !m_bIsReady)
+      return;
+
+    camera_fb_t * fb = NULL;
+    int64_t fr_start = esp_timer_get_time();
+
+    fb = esp_camera_fb_get();
+    if (!fb) {
+        Serial.println("Camera capture failed");
+    }else{
+        size_t fb_len = 0;
+        if(fb->format == PIXFORMAT_JPEG){
+            fb_len = fb->len;
+        } else {
+          Serial.println("JPEG not supported");
+        }
+
+        String path = "/picture" + String(m_pictNum) +".jpg";
+        m_pictNum = (m_pictNum + 1 ) % MAX_PICT_NUM;
+
+        File file = m_fs.open(path.c_str(), FILE_WRITE);
+        if(!file){
+          Serial.println("Failed to open file in writing mode");
+        } 
+        else {
+          file.write(fb->buf, fb->len); // payload (image), payload length
+        }
+        file.close();
+        esp_camera_fb_return(fb);
+        int64_t fr_end = esp_timer_get_time();
+        Serial.printf("%s: %uB %ums\n", path.c_str(), (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start)/1000));
+    }
+
+}
+
+void SkCamera::InitSdCard()
+{
+    Serial.println("Starting SD Card");
+    if(!SD_MMC.begin()){
+      Serial.println("SD Card Mount Failed");
+      return;
+    }
+ 
+    uint8_t cardType = SD_MMC.cardType();
+    if(cardType == CARD_NONE){
+      Serial.println("No SD Card attached");
+      return;
+    }
+
+    Serial.println("SD Card is ready");
+
+    m_bIsSdCardMounted = true;
 }
